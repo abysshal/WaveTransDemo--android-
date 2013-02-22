@@ -17,6 +17,7 @@ import android.media.AudioRecord;
 import android.media.AudioTrack;
 import android.media.MediaRecorder;
 import android.os.Bundle;
+import android.os.Environment;
 import android.app.Activity;
 import android.util.Log;
 import android.view.Menu;
@@ -153,7 +154,7 @@ public class MainActivity extends Activity {
 			byte[] buffer = new byte[bufferSize];
 			FileOutputStream fos = null;
 			int readSize = 0;
-			fileName = "/sdcard/wavein_"
+			fileName = Environment.getExternalStorageDirectory() + "/wavein_"
 					+ Calendar.getInstance().getTimeInMillis();
 			File file = new File(fileName + ".raw");
 			try {
@@ -215,6 +216,7 @@ public class MainActivity extends Activity {
 				Util.int2byte(dataLen, header, Constant.WAVE_DATA_LEN_OFFSET);
 				Util.int2byte(dataLen + 36, header,
 						Constant.WAVE_FILE_LEN_OFFSET);
+				header[34] = 0x10;
 				fos.write(header);
 
 				readSize = fis.read(buffer);
