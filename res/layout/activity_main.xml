@@ -21,4 +21,13 @@
         android:layout_marginTop="43dp"
         android:text="Play" />
 
+    <Button
+        android:id="@+id/Button01"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignLeft="@+id/textView1"
+        android:layout_below="@+id/button1"
+        android:layout_marginTop="30dp"
+        android:text="Record" />
+
 </RelativeLayout>
