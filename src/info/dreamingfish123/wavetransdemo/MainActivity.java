@@ -145,8 +145,11 @@ public class MainActivity extends Activity {
 		public void run() {
 			isRunning = true;
 
-			bufferSize = AudioRecord.getMinBufferSize(Constant.WAVE_RATE_INHZ,
-					AudioFormat.CHANNEL_IN_MONO, AudioFormat.ENCODING_PCM_8BIT);
+			bufferSize = AudioRecord
+					.getMinBufferSize(Constant.WAVE_RATE_INHZ,
+							AudioFormat.CHANNEL_IN_MONO,
+							AudioFormat.ENCODING_PCM_16BIT);
+			System.out.println("BufferSize:" + bufferSize);
 			byte[] buffer = new byte[bufferSize];
 			FileOutputStream fos = null;
 			int readSize = 0;
@@ -185,7 +188,7 @@ public class MainActivity extends Activity {
 		public void startRecord() {
 			recorder = new AudioRecord(MediaRecorder.AudioSource.MIC,
 					Constant.WAVE_RATE_INHZ, AudioFormat.CHANNEL_IN_MONO,
-					AudioFormat.ENCODING_PCM_8BIT, bufferSize);
+					AudioFormat.ENCODING_PCM_16BIT, bufferSize);
 			recorder.startRecording();
 		}
 
@@ -229,6 +232,35 @@ public class MainActivity extends Activity {
 				e.printStackTrace();
 			}
 		}
+	}
+
+	class PlayTestRunnable implements Runnable {
+
+		public boolean isRunning = false;
+		public InputStream is = null;
+		public int repeatTimes = 1;
+		public long sleepInterval = 0l;
+		byte[] wavein = new byte[Constant.WAVEOUT_BUF_SIZE];
+
+		public PlayTestRunnable(InputStream inputStream, int repeat, long sleep) {
+			is = inputStream;
+			repeatTimes = repeat;
+			sleepInterval = sleep;
+		}
+
+		@Override
+		public void run() {
+			isRunning = true;
+
+			while (isRunning) {
+
+			}
+		}
+
+		public void prepareWavein() {
+
+		}
+
 	}
 
 }
