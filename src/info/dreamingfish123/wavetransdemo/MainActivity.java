@@ -216,6 +216,10 @@ public class MainActivity extends Activity {
 				Util.int2byte(dataLen, header, Constant.WAVE_DATA_LEN_OFFSET);
 				Util.int2byte(dataLen + 36, header,
 						Constant.WAVE_FILE_LEN_OFFSET);
+				header[28] = (byte) 0x88;
+				header[29] = 0x58;
+				header[30] = 0x01;
+				header[31] = 0x00;
 				header[34] = 0x10;
 				fos.write(header);
 
