@@ -220,6 +220,7 @@ public class MainActivity extends Activity {
 				header[29] = 0x58;
 				header[30] = 0x01;
 				header[31] = 0x00;
+				header[32] = 0x02;
 				header[34] = 0x10;
 				fos.write(header);
 
