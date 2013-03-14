@@ -1,7 +1,10 @@
 package info.dreamingfish123.wavetransdemo;
 
-import info.dreamingfish123.WaveTransProto.codec.Constant;
-import info.dreamingfish123.WaveTransProto.codec.Util;
+import info.dreamingfish123.wavetransdemo.proto.Constant;
+import info.dreamingfish123.wavetransdemo.proto.DynamicAverageAnalyzer;
+import info.dreamingfish123.wavetransdemo.proto.Util;
+import info.dreamingfish123.wavetransdemo.proto.WTPPacket;
+import info.dreamingfish123.wavetransdemo.proto.WaveEncodeTest;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -9,7 +12,9 @@ import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.ArrayList;
 import java.util.Calendar;
+import java.util.List;
 
 import android.media.AudioFormat;
 import android.media.AudioManager;
@@ -18,31 +23,48 @@ import android.media.AudioTrack;
 import android.media.MediaRecorder;
 import android.os.Bundle;
 import android.os.Environment;
+import android.os.Handler;
+import android.os.Message;
 import android.app.Activity;
 import android.util.Log;
 import android.view.Menu;
 import android.view.View;
 import android.widget.Button;
+import android.widget.TextView;
 
 public class MainActivity extends Activity {
 
 	private final static String TAG = "MAIN";
 	private AudioTrack sender = null;
 	private RecordTestRunnable recordTestRunnable = null;
+	private DecodeTestRunnable decodeTestRunnable = null;
 	private boolean isRecording = false;
+	private boolean isTesting = false;
+	private List<WTPPacket> foundPackets = new ArrayList<WTPPacket>();
+	private Handler recorderCallbackHandler = new Handler() {
+
+		@Override
+		public void handleMessage(Message msg) {
+			if (msg.what == 0 && msg.obj != null) {
+				foundPackets.add((WTPPacket) msg.obj);
+				if (foundPacketTextView != null) {
+					foundPacketTextView.setText(String.valueOf(foundPackets
+							.size()));
+				}
+			}
+			super.handleMessage(msg);
+		}
+
+	};
+
+	private TextView logTextView;
+	private TextView foundPacketTextView;
+	private TextView rightPacketTextView;
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.activity_main);
-
-		// int minBuf = AudioTrack.getMinBufferSize(44100,
-		// AudioFormat.CHANNEL_OUT_MONO, AudioFormat.ENCODING_PCM_8BIT);
-		// Log.d(TAG, "min buffer size:" + minBuf);
-		// sender = new AudioTrack(AudioManager.STREAM_MUSIC, 44100,
-		// AudioFormat.CHANNEL_OUT_MONO, AudioFormat.ENCODING_PCM_8BIT,
-		// minBuf * 10, AudioTrack.MODE_STREAM);
-		// sender.play();
 
 		setEvents();
 	}
@@ -56,8 +78,6 @@ public class MainActivity extends Activity {
 
 	@Override
 	protected void onDestroy() {
-		// sender.stop();
-		// sender.release();
 		if (sender != null) {
 			sender.stop();
 			sender.release();
@@ -92,6 +112,36 @@ public class MainActivity extends Activity {
 				}
 			}
 		});
+
+		Button compareButton = (Button) findViewById(R.id.Button02);
+		compareButton.setOnClickListener(new View.OnClickListener() {
+
+			@Override
+			public void onClick(View v) {
+				compareResult();
+			}
+		});
+
+		final Button testButton = (Button) findViewById(R.id.Button03);
+		testButton.setOnClickListener(new View.OnClickListener() {
+
+			@Override
+			public void onClick(View v) {
+				if (isTesting) {
+					isTesting = false;
+					stopTest();
+					testButton.setText("Strat Test");
+				} else {
+					isTesting = true;
+					startTest();
+					testButton.setText("Stop Test");
+				}
+			}
+		});
+
+		foundPacketTextView = (TextView) findViewById(R.id.textView1);
+		rightPacketTextView = (TextView) findViewById(R.id.TextView02);
+		logTextView = (TextView) findViewById(R.id.textView3);
 	}
 
 	private void playSample() {
@@ -115,7 +165,6 @@ public class MainActivity extends Activity {
 			sender.play();
 
 		} catch (IOException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
 	}
@@ -132,6 +181,50 @@ public class MainActivity extends Activity {
 		if (recordTestRunnable != null) {
 			recordTestRunnable.isRunning = false;
 			recordTestRunnable = null;
+		}
+	}
+
+	private void compareResult() {
+		int right = 0;
+		for (WTPPacket packet : foundPackets) {
+			if (WaveEncodeTest.compareSData(packet.getPacketBytes())) {
+				right++;
+			}
+		}
+		if (rightPacketTextView != null) {
+			rightPacketTextView.setText(String.valueOf(right));
+		}
+	}
+
+	private void clean() {
+		if (foundPackets != null) {
+			foundPackets.clear();
+		}
+		if (foundPacketTextView != null) {
+			foundPacketTextView.setText("0");
+		}
+		if (rightPacketTextView != null) {
+			rightPacketTextView.setText("0");
+		}
+		if (logTextView != null) {
+			logTextView.setText("0");
+		}
+	}
+
+	private void startTest() {
+		clean();
+		if (decodeTestRunnable == null) {
+			decodeTestRunnable = new DecodeTestRunnable(
+					this.recorderCallbackHandler);
+			Thread thread = new Thread(decodeTestRunnable);
+			thread.start();
+		}
+	}
+
+	private void stopTest() {
+		if (decodeTestRunnable != null) {
+			decodeTestRunnable.isRunning = false;
+			decodeTestRunnable = null;
 		}
 	}
 
@@ -270,4 +363,64 @@ public class MainActivity extends Activity {
 
 	}
 
+	class DecodeTestRunnable implements Runnable {
+
+		public Handler handler;
+		public AudioRecord recorder = null;
+		int bufferSize;
+		public boolean isRunning = false;
+		private DynamicAverageAnalyzer analyzer = null;
+
+		public DecodeTestRunnable(Handler handler) {
+			this.handler = handler;
+			this.analyzer = new DynamicAverageAnalyzer();
+		}
+
+		@Override
+		public void run() {
+			isRunning = true;
+
+			bufferSize = AudioRecord
+					.getMinBufferSize(Constant.WAVE_RATE_INHZ,
+							AudioFormat.CHANNEL_IN_MONO,
+							AudioFormat.ENCODING_PCM_16BIT);
+			Log.i(TAG, "Audio Recorder Buffer Size:" + bufferSize);
+			byte[] buffer = new byte[bufferSize];
+			int readSize = 0;
+
+			startRecord();
+			while (isRunning) {
+				readSize = recorder.read(buffer, 0, bufferSize);
+				if (AudioRecord.ERROR_INVALID_OPERATION != readSize) {
+					if (!analyzer.appendBuffer(buffer, 0, readSize)) {
+						Log.w(TAG,
+								"Append buffer to analyzer failed. Not enough space.");
+					}
+					if (analyzer.analyze()) {
+						Log.d(TAG, "analyze SUCC!");
+						handler.obtainMessage(0, analyzer.getPacket());
+						analyzer.resetForNext();
+					} else {
+//						Log.d(TAG, "analyze failed..");
+					}
+				}
+			}
+			stopRecord();
+		}
+
+		public void startRecord() {
+			recorder = new AudioRecord(MediaRecorder.AudioSource.MIC,
+					Constant.WAVE_RATE_INHZ, AudioFormat.CHANNEL_IN_MONO,
+					AudioFormat.ENCODING_PCM_16BIT, bufferSize);
+			recorder.startRecording();
+		}
+
+		public void stopRecord() {
+			if (recorder != null) {
+				recorder.stop();
+				recorder.release();
+				recorder = null;
+			}
+		}
+	}
 }
