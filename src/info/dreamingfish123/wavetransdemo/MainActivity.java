@@ -423,4 +423,41 @@ public class MainActivity extends Activity {
 			}
 		}
 	}
+
+	class FileDecodeTestRunnable implements Runnable {
+
+		private Handler handler;
+		private String path = "wavein_AC3_S5570_r_33.wav";
+		
+		public FileDecodeTestRunnable(Handler handler) {
+			this.handler = handler;
+		}
+		
+		@Override
+		public void run() {
+			try {
+				InputStream is = getResources().getAssets().open(path);
+				byte[] wavein = new byte[Constant.WAVEOUT_BUF_SIZE];
+				int read = is.read(wavein);
+				is.close();
+
+				Log.d(TAG, "buffer size:" + (read - Constant.WAVE_HEAD_LEN));
+				if (sender != null) {
+					sender.release();
+				}
+
+				sender = new AudioTrack(AudioManager.STREAM_MUSIC,
+						Constant.WAVE_RATE_INHZ, AudioFormat.CHANNEL_OUT_MONO,
+						AudioFormat.ENCODING_PCM_8BIT,
+						Constant.WAVEOUT_BUF_SIZE * 2, AudioTrack.MODE_STATIC);
+				sender.write(wavein, Constant.WAVE_HEAD_LEN, read
+						- Constant.WAVE_HEAD_LEN);
+				sender.play();
+
+			} catch (IOException e) {
+				e.printStackTrace();
+			}			
+		}
+		
+	}
 }

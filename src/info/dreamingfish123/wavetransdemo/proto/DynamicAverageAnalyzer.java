@@ -1,7 +1,5 @@
 package info.dreamingfish123.wavetransdemo.proto;
 
-import android.R.integer;
-
 public class DynamicAverageAnalyzer {
 
 	/* wavein buffer */
