@@ -25,6 +25,7 @@ import android.os.Bundle;
 import android.os.Environment;
 import android.os.Handler;
 import android.os.Message;
+import android.R.integer;
 import android.app.Activity;
 import android.util.Log;
 import android.view.Menu;
@@ -40,6 +41,7 @@ public class MainActivity extends Activity {
 	private DecodeTestRunnable decodeTestRunnable = null;
 	private boolean isRecording = false;
 	private boolean isTesting = false;
+	private boolean isTestingFile = false;
 	private List<WTPPacket> foundPackets = new ArrayList<WTPPacket>();
 	private Handler recorderCallbackHandler = new Handler() {
 
@@ -51,6 +53,8 @@ public class MainActivity extends Activity {
 					foundPacketTextView.setText(String.valueOf(foundPackets
 							.size()));
 				}
+			} else if (msg.what == 1) {
+				isTestingFile = false;
 			}
 			super.handleMessage(msg);
 		}
@@ -135,6 +139,20 @@ public class MainActivity extends Activity {
 					isTesting = true;
 					startTest();
 					testButton.setText("Stop Test");
+				}
+			}
+		});
+
+		Button testFileButton = (Button) findViewById(R.id.Button04);
+		testFileButton.setOnClickListener(new View.OnClickListener() {
+
+			@Override
+			public void onClick(View v) {
+				if (isTestingFile) {
+					return;
+				} else {
+					isTestingFile = true;
+					startTestFile();
 				}
 			}
 		});
@@ -226,6 +244,14 @@ public class MainActivity extends Activity {
 			decodeTestRunnable.isRunning = false;
 			decodeTestRunnable = null;
 		}
+	}
+
+	private void startTestFile() {
+		clean();
+		FileDecodeTestRunnable fileDecodeTestRunnable = new FileDecodeTestRunnable(
+				this.recorderCallbackHandler);
+		Thread thread = new Thread(fileDecodeTestRunnable);
+		thread.start();
 	}
 
 	class RecordTestRunnable implements Runnable {
@@ -401,7 +427,7 @@ public class MainActivity extends Activity {
 						handler.obtainMessage(0, analyzer.getPacket());
 						analyzer.resetForNext();
 					} else {
-//						Log.d(TAG, "analyze failed..");
+						// Log.d(TAG, "analyze failed..");
 					}
 				}
 			}
@@ -428,36 +454,37 @@ public class MainActivity extends Activity {
 
 		private Handler handler;
 		private String path = "wavein_AC3_S5570_r_33.wav";
-		
+
 		public FileDecodeTestRunnable(Handler handler) {
 			this.handler = handler;
 		}
-		
+
 		@Override
 		public void run() {
 			try {
 				InputStream is = getResources().getAssets().open(path);
 				byte[] wavein = new byte[Constant.WAVEOUT_BUF_SIZE];
-				int read = is.read(wavein);
-				is.close();
-
-				Log.d(TAG, "buffer size:" + (read - Constant.WAVE_HEAD_LEN));
-				if (sender != null) {
-					sender.release();
+				is.skip(44);
+				DynamicAverageAnalyzer analyzer = new DynamicAverageAnalyzer();
+				while (true) {
+					int read = is.read(wavein);
+					if (read < 0) {
+						break;
+					}
+					if (analyzer.appendBuffer(wavein, 0, read)) {
+						break;
+					}
+					if (analyzer.analyze()) {
+						handler.obtainMessage(0, analyzer.getPacket());
+						analyzer.resetForNext();
+					}
 				}
-
-				sender = new AudioTrack(AudioManager.STREAM_MUSIC,
-						Constant.WAVE_RATE_INHZ, AudioFormat.CHANNEL_OUT_MONO,
-						AudioFormat.ENCODING_PCM_8BIT,
-						Constant.WAVEOUT_BUF_SIZE * 2, AudioTrack.MODE_STATIC);
-				sender.write(wavein, Constant.WAVE_HEAD_LEN, read
-						- Constant.WAVE_HEAD_LEN);
-				sender.play();
-
+				is.close();
+				this.handler.obtainMessage(1);
 			} catch (IOException e) {
 				e.printStackTrace();
-			}			
+			}
 		}
-		
+
 	}
 }

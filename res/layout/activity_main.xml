@@ -88,4 +88,12 @@
         android:layout_toRightOf="@+id/textView1"
         android:text="Start Test" />
 
+    <Button
+        android:id="@+id/Button04"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_above="@+id/textView2"
+        android:layout_alignParentLeft="true"
+        android:text="TestFile" />
+
 </RelativeLayout>
