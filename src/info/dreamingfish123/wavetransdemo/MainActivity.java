@@ -25,7 +25,6 @@ import android.os.Bundle;
 import android.os.Environment;
 import android.os.Handler;
 import android.os.Message;
-import android.R.integer;
 import android.app.Activity;
 import android.util.Log;
 import android.view.Menu;
@@ -47,6 +46,7 @@ public class MainActivity extends Activity {
 
 		@Override
 		public void handleMessage(Message msg) {
+			Log.d(TAG, "msg:" + msg.what);
 			if (msg.what == 0 && msg.obj != null) {
 				foundPackets.add((WTPPacket) msg.obj);
 				if (foundPacketTextView != null) {
@@ -149,6 +149,7 @@ public class MainActivity extends Activity {
 			@Override
 			public void onClick(View v) {
 				if (isTestingFile) {
+					isTesting = false;
 					return;
 				} else {
 					isTestingFile = true;
@@ -457,6 +458,7 @@ public class MainActivity extends Activity {
 
 		public FileDecodeTestRunnable(Handler handler) {
 			this.handler = handler;
+			Log.d(TAG, "new file decode test runnable.");
 		}
 
 		@Override
@@ -464,27 +466,31 @@ public class MainActivity extends Activity {
 			try {
 				InputStream is = getResources().getAssets().open(path);
 				byte[] wavein = new byte[Constant.WAVEOUT_BUF_SIZE];
-				is.skip(44);
+				int read = is.read(wavein, 0, 44);
+				Log.d(TAG, "AudioFormat:" + wavein[34]);
 				DynamicAverageAnalyzer analyzer = new DynamicAverageAnalyzer();
 				while (true) {
-					int read = is.read(wavein);
+					read = is.read(wavein);
 					if (read < 0) {
 						break;
 					}
-					if (analyzer.appendBuffer(wavein, 0, read)) {
+					Log.d(TAG, "read:" + read);
+					if (!analyzer.appendBuffer(wavein, 0, read)) {
 						break;
 					}
 					if (analyzer.analyze()) {
 						handler.obtainMessage(0, analyzer.getPacket());
+						Log.d(TAG, "analyze file ok");
 						analyzer.resetForNext();
 					}
 				}
 				is.close();
-				this.handler.obtainMessage(1);
 			} catch (IOException e) {
 				e.printStackTrace();
+			} finally {
+				Log.d(TAG, "test file finish..");
+				this.handler.obtainMessage(1);
 			}
 		}
-
 	}
 }

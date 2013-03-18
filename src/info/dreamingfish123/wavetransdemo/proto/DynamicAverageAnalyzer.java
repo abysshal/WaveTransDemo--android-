@@ -181,10 +181,10 @@ public class DynamicAverageAnalyzer {
 	 *            how much bytes remained to be moved
 	 */
 	private void resetOnDecodeError() {
-		// int len = start + remainLen;
-		// resetAll();
-		// remainLen = len > 0 ? len - 1 : 0;
-		// start = remainLen > 0 ? 1 : 0;
+//		 int len = start + remainLen;
+//		 resetAll();
+//		 remainLen = len > 0 ? len - 1 : 0;
+//		 start = remainLen > 0 ? 1 : 0;
 
 		int len = lastRemainLen;
 		reallocBuffer(lastStart, lastRemainLen);
