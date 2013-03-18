@@ -17,8 +17,9 @@
         android:id="@+id/textView2"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
+        android:layout_alignBaseline="@+id/TextView1"
+        android:layout_alignBottom="@+id/textView1"
         android:layout_alignParentLeft="true"
-        android:layout_alignTop="@+id/textView1"
         android:text="Packet Found:"
         android:textAppearance="?android:attr/textAppearanceLarge" />
 
@@ -95,5 +96,13 @@
         android:layout_above="@+id/textView2"
         android:layout_alignParentLeft="true"
         android:text="TestFile" />
+
+    <Button
+        android:id="@+id/Button05"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_above="@+id/textView2"
+        android:layout_alignLeft="@+id/Button02"
+        android:text="Clean" />
 
 </RelativeLayout>

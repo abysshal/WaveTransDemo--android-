@@ -161,6 +161,16 @@ public class MainActivity extends Activity {
 			}
 		});
 
+		Button cleanButton = (Button) findViewById(R.id.Button05);
+		cleanButton.setOnClickListener(new View.OnClickListener() {
+
+			@Override
+			public void onClick(View v) {
+				// TODO Auto-generated method stub
+				clean();
+			}
+		});
+
 		foundPacketTextView = (TextView) findViewById(R.id.textView1);
 		rightPacketTextView = (TextView) findViewById(R.id.TextView02);
 		logTextView = (TextView) findViewById(R.id.textView3);
@@ -234,7 +244,7 @@ public class MainActivity extends Activity {
 	}
 
 	private void startTest() {
-		clean();
+//		clean();
 		if (decodeTestRunnable == null) {
 			decodeTestRunnable = new DecodeTestRunnable(
 					this.recorderCallbackHandler);
