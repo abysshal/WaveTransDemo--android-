@@ -55,6 +55,10 @@ public class MainActivity extends Activity {
 				}
 			} else if (msg.what == 1) {
 				isTestingFile = false;
+			} else if (msg.what == 2) {
+				logTextView.setText("");
+			} else if (msg.what == 3) {
+				logTextView.append(msg.obj.toString());
 			}
 			super.handleMessage(msg);
 		}
@@ -149,7 +153,6 @@ public class MainActivity extends Activity {
 			@Override
 			public void onClick(View v) {
 				if (isTestingFile) {
-					isTesting = false;
 					return;
 				} else {
 					isTestingFile = true;
@@ -422,10 +425,14 @@ public class MainActivity extends Activity {
 					if (!analyzer.appendBuffer(buffer, 0, readSize)) {
 						Log.w(TAG,
 								"Append buffer to analyzer failed. Not enough space.");
+						handler.obtainMessage(3,
+								"Append buffer to analyzer failed. Not enough space.")
+								.sendToTarget();
 					}
 					if (analyzer.analyze()) {
 						Log.d(TAG, "analyze SUCC!");
-						handler.obtainMessage(0, analyzer.getPacket());
+						handler.obtainMessage(0, analyzer.getPacket())
+								.sendToTarget();
 						analyzer.resetForNext();
 					} else {
 						// Log.d(TAG, "analyze failed..");
@@ -458,7 +465,6 @@ public class MainActivity extends Activity {
 
 		public FileDecodeTestRunnable(Handler handler) {
 			this.handler = handler;
-			Log.d(TAG, "new file decode test runnable.");
 		}
 
 		@Override
@@ -474,12 +480,13 @@ public class MainActivity extends Activity {
 					if (read < 0) {
 						break;
 					}
-					Log.d(TAG, "read:" + read);
+					// Log.d(TAG, "read:" + read);
 					if (!analyzer.appendBuffer(wavein, 0, read)) {
 						break;
 					}
 					if (analyzer.analyze()) {
-						handler.obtainMessage(0, analyzer.getPacket());
+						handler.obtainMessage(0, analyzer.getPacket())
+								.sendToTarget();
 						Log.d(TAG, "analyze file ok");
 						analyzer.resetForNext();
 					}
@@ -489,7 +496,7 @@ public class MainActivity extends Activity {
 				e.printStackTrace();
 			} finally {
 				Log.d(TAG, "test file finish..");
-				this.handler.obtainMessage(1);
+				this.handler.obtainMessage(1).sendToTarget();
 			}
 		}
 	}
