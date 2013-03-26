@@ -106,11 +106,11 @@ public class MainActivity extends Activity {
 				// playSample();
 				if (isPlaying) {
 					isPlaying = false;
-					startTestPlaying();
+					stopTestPlaying();
 					playButton.setText("Start Play");
 				} else {
 					isPlaying = true;
-					stopTestPlaying();
+					startTestPlaying();
 					playButton.setText("Stop Play");
 				}
 			}
