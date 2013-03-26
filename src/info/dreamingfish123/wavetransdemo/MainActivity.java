@@ -25,6 +25,7 @@ import android.os.Bundle;
 import android.os.Environment;
 import android.os.Handler;
 import android.os.Message;
+import android.R.integer;
 import android.app.Activity;
 import android.util.Log;
 import android.view.Menu;
@@ -38,9 +39,11 @@ public class MainActivity extends Activity {
 	private AudioTrack sender = null;
 	private RecordTestRunnable recordTestRunnable = null;
 	private DecodeTestRunnable decodeTestRunnable = null;
+	private PlayTestRunnable playTestRunnable = null;
 	private boolean isRecording = false;
 	private boolean isTesting = false;
 	private boolean isTestingFile = false;
+	private boolean isPlaying = false;
 	private List<WTPPacket> foundPackets = new ArrayList<WTPPacket>();
 	private Handler recorderCallbackHandler = new Handler() {
 
@@ -95,12 +98,21 @@ public class MainActivity extends Activity {
 	}
 
 	private void setEvents() {
-		Button playButton = (Button) findViewById(R.id.button1);
+		final Button playButton = (Button) findViewById(R.id.button1);
 		playButton.setOnClickListener(new View.OnClickListener() {
 
 			@Override
 			public void onClick(View v) {
-				playSample();
+				// playSample();
+				if (isPlaying) {
+					isPlaying = false;
+					startTestPlaying();
+					playButton.setText("Start Play");
+				} else {
+					isPlaying = true;
+					stopTestPlaying();
+					playButton.setText("Stop Play");
+				}
 			}
 		});
 
@@ -244,7 +256,7 @@ public class MainActivity extends Activity {
 	}
 
 	private void startTest() {
-//		clean();
+		// clean();
 		if (decodeTestRunnable == null) {
 			decodeTestRunnable = new DecodeTestRunnable(
 					this.recorderCallbackHandler);
@@ -266,6 +278,19 @@ public class MainActivity extends Activity {
 				this.recorderCallbackHandler);
 		Thread thread = new Thread(fileDecodeTestRunnable);
 		thread.start();
+	}
+
+	private void startTestPlaying() {
+		playTestRunnable = new PlayTestRunnable();
+		Thread thread = new Thread(playTestRunnable);
+		thread.start();
+	}
+
+	private void stopTestPlaying() {
+		if (playTestRunnable != null) {
+			playTestRunnable.isRunning = false;
+			playTestRunnable = null;
+		}
 	}
 
 	class RecordTestRunnable implements Runnable {
@@ -388,17 +413,39 @@ public class MainActivity extends Activity {
 			sleepInterval = sleep;
 		}
 
+		public PlayTestRunnable() {
+		}
+
 		@Override
 		public void run() {
 			isRunning = true;
+			int read = 0;
+			byte[] wavein = new byte[Constant.WAVEOUT_BUF_SIZE];
+			try {
+				InputStream is = getResources().getAssets().open("sample.wav");
+				read = is.read(wavein);
+				is.close();
+				Log.d(TAG, "buffer size:" + (read - Constant.WAVE_HEAD_LEN));
+			} catch (IOException e) {
+				e.printStackTrace();
+			}
+			AudioTrack audioTrack = new AudioTrack(AudioManager.STREAM_MUSIC,
+					Constant.WAVE_RATE_INHZ, AudioFormat.CHANNEL_OUT_MONO,
+					AudioFormat.ENCODING_PCM_8BIT, AudioTrack.getMinBufferSize(
+							Constant.WAVE_RATE_INHZ,
+							AudioFormat.CHANNEL_OUT_MONO,
+							AudioFormat.ENCODING_PCM_8BIT),
+					AudioTrack.MODE_STREAM);
+			audioTrack.play();
 
 			while (isRunning) {
-
+				audioTrack.write(wavein, Constant.WAVE_HEAD_LEN, read
+						- Constant.WAVE_HEAD_LEN);
 			}
-		}
 
-		public void prepareWavein() {
-
+			audioTrack.stop();
+			audioTrack.release();
+			audioTrack = null;
 		}
 
 	}
