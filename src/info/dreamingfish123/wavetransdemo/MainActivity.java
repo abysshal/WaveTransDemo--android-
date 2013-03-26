@@ -441,6 +441,11 @@ public class MainActivity extends Activity {
 			while (isRunning) {
 				audioTrack.write(wavein, Constant.WAVE_HEAD_LEN, read
 						- Constant.WAVE_HEAD_LEN);
+				try {
+					Thread.sleep(20);
+				} catch (InterruptedException e) {
+					e.printStackTrace();
+				}
 			}
 
 			audioTrack.stop();
