@@ -25,7 +25,6 @@ import android.os.Bundle;
 import android.os.Environment;
 import android.os.Handler;
 import android.os.Message;
-import android.R.integer;
 import android.app.Activity;
 import android.util.Log;
 import android.view.Menu;
@@ -81,6 +80,20 @@ public class MainActivity extends Activity {
 	}
 
 	@Override
+	protected void onPause() {
+		// MediaButtonReceiver.unregister(this);
+		MediaButtonReceiver.unregisterAudioManager(this);
+		super.onPause();
+	}
+
+	@Override
+	protected void onResume() {
+		// MediaButtonReceiver.register(this);
+		MediaButtonReceiver.registerAudioManager(this);
+		super.onResume();
+	}
+
+	@Override
 	public boolean onCreateOptionsMenu(Menu menu) {
 		// Inflate the menu; this adds items to the action bar if it is present.
 		getMenuInflater().inflate(R.menu.activity_main, menu);
@@ -94,6 +107,7 @@ public class MainActivity extends Activity {
 			sender.release();
 		}
 		stopRecord();
+
 		super.onDestroy();
 	}
 
