@@ -77,8 +77,8 @@ public class DynamicAverageAnalyzer {
 			return false;
 		}
 		for (int i = 0; i < len / 2; i++) {
-			buffer[start + remainLen + i] = Util.readShortLittleEndian(data,
-					i * 2);
+			buffer[start + remainLen + i] = Util.amplify(Util
+					.readShortLittleEndian(data, i * 2));
 		}
 		remainLen += len / 2;
 		return true;
@@ -181,10 +181,10 @@ public class DynamicAverageAnalyzer {
 	 *            how much bytes remained to be moved
 	 */
 	private void resetOnDecodeError() {
-//		 int len = start + remainLen;
-//		 resetAll();
-//		 remainLen = len > 0 ? len - 1 : 0;
-//		 start = remainLen > 0 ? 1 : 0;
+		// int len = start + remainLen;
+		// resetAll();
+		// remainLen = len > 0 ? len - 1 : 0;
+		// start = remainLen > 0 ? 1 : 0;
 
 		int len = lastRemainLen;
 		reallocBuffer(lastStart, lastRemainLen);

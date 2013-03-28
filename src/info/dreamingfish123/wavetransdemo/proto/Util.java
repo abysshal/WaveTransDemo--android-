@@ -1,5 +1,7 @@
 package info.dreamingfish123.wavetransdemo.proto;
 
+import android.R.integer;
+
 public class Util {
 
 	public static void int2byte(int val, byte[] a, int offset) {
@@ -52,7 +54,7 @@ public class Util {
 		short s1 = (short) (bytes[offset + 1] & 0xff);
 		return ((short) (s0 | s1 << 8)) + Short.MAX_VALUE + 1;
 	}
-	
+
 	public static int readShortBigEndian(byte[] bytes, int offset) {
 		short s1 = (short) (bytes[offset] & 0xff);
 		short s0 = (short) (bytes[offset + 1] & 0xff);
@@ -63,5 +65,25 @@ public class Util {
 		short s0 = (short) (b[offset] & 0xff);
 		short s1 = (short) (b[offset + 1] & 0xff);
 		return (short) (s0 | s1 << 8);
+	}
+
+	public static int amplify(int src) {
+		int ret = 0;
+		if (src > Constant.AMPLIFICATION_LEVEL_MUTE) {
+			ret = (src - Constant.AMPLIFICATION_LEVEL_MUTE)
+					* Constant.MAGNIFICATION
+					+ Constant.AMPLIFICATION_LEVEL_MUTE;
+			if (ret > Short.MAX_VALUE * 2) {
+				ret = Short.MAX_VALUE * 2;
+			}
+		} else {
+			ret = Constant.AMPLIFICATION_LEVEL_MUTE
+					- (Constant.AMPLIFICATION_LEVEL_MUTE - src)
+					* Constant.MAGNIFICATION;
+			if (ret < 0) {
+				ret = 0;
+			}
+		}
+		return ret;
 	}
 }

@@ -1,5 +1,7 @@
 package info.dreamingfish123.wavetransdemo.proto;
 
+import android.R.integer;
+
 public class Constant {
 
 	public static final int WAVE_RATE_INHZ = 44100;
@@ -36,4 +38,7 @@ public class Constant {
 	 * 1 - on Android;
 	 */
 	public static final int MANCHESTER_LOW = 0;
+	
+	public static final int MAGNIFICATION = 10;
+	public static final int AMPLIFICATION_LEVEL_MUTE = (Short.MAX_VALUE + 1) / 2;
 }
