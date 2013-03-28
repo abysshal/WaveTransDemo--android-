@@ -146,6 +146,15 @@ public class MainActivity extends Activity {
 				}
 			}
 		});
+		
+		Button playOnceButton = (Button) findViewById(R.id.button2);
+		playOnceButton.setOnClickListener(new View.OnClickListener() {
+			
+			@Override
+			public void onClick(View v) {
+				playSample();			
+			}
+		});
 
 		Button compareButton = (Button) findViewById(R.id.Button02);
 		compareButton.setOnClickListener(new View.OnClickListener() {
@@ -164,7 +173,7 @@ public class MainActivity extends Activity {
 				if (isTesting) {
 					isTesting = false;
 					stopTest();
-					testButton.setText("Strat Test");
+					testButton.setText("Start Test");
 				} else {
 					isTesting = true;
 					startTest();
@@ -456,7 +465,7 @@ public class MainActivity extends Activity {
 				audioTrack.write(wavein, Constant.WAVE_HEAD_LEN, read
 						- Constant.WAVE_HEAD_LEN);
 				try {
-					Thread.sleep(20);
+					Thread.sleep(200);
 				} catch (InterruptedException e) {
 					e.printStackTrace();
 				}
