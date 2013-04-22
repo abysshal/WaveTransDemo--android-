@@ -5,6 +5,7 @@ import info.dreamingfish123.wavetransdemo.proto.DynamicAverageAnalyzer;
 import info.dreamingfish123.wavetransdemo.proto.Util;
 import info.dreamingfish123.wavetransdemo.proto.WTPPacket;
 import info.dreamingfish123.wavetransdemo.proto.WaveEncodeTest;
+import info.dreamingfish123.wavetransdemo.proto.WaveEncoder;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -146,13 +147,13 @@ public class MainActivity extends Activity {
 				}
 			}
 		});
-		
+
 		Button playOnceButton = (Button) findViewById(R.id.button2);
 		playOnceButton.setOnClickListener(new View.OnClickListener() {
-			
+
 			@Override
 			public void onClick(View v) {
-				playSample();			
+				playSample();
 			}
 		});
 
@@ -213,12 +214,10 @@ public class MainActivity extends Activity {
 
 	private void playSample() {
 		try {
-			InputStream is = getResources().getAssets().open("sample.wav");
-			byte[] wavein = new byte[Constant.WAVEOUT_BUF_SIZE];
-			int read = is.read(wavein);
-			is.close();
+			byte[] wavein = WaveEncoder.encode(WaveEncodeTest
+					.getBytes(WaveEncodeTest.DDATA));
 
-			Log.d(TAG, "buffer size:" + (read - Constant.WAVE_HEAD_LEN));
+			Log.d(TAG, "buffer size:" + wavein.length);
 			if (sender != null) {
 				sender.release();
 			}
@@ -227,11 +226,10 @@ public class MainActivity extends Activity {
 					Constant.WAVE_RATE_INHZ, AudioFormat.CHANNEL_OUT_MONO,
 					AudioFormat.ENCODING_PCM_8BIT,
 					Constant.WAVEOUT_BUF_SIZE * 2, AudioTrack.MODE_STATIC);
-			sender.write(wavein, Constant.WAVE_HEAD_LEN, read
-					- Constant.WAVE_HEAD_LEN);
+			sender.write(wavein, 0, wavein.length);
 			sender.play();
 
-		} catch (IOException e) {
+		} catch (Exception e) {
 			e.printStackTrace();
 		}
 	}
@@ -442,16 +440,18 @@ public class MainActivity extends Activity {
 		@Override
 		public void run() {
 			isRunning = true;
-			int read = 0;
-			byte[] wavein = new byte[Constant.WAVEOUT_BUF_SIZE];
-			try {
-				InputStream is = getResources().getAssets().open("sample.wav");
-				read = is.read(wavein);
-				is.close();
-				Log.d(TAG, "buffer size:" + (read - Constant.WAVE_HEAD_LEN));
-			} catch (IOException e) {
-				e.printStackTrace();
-			}
+			// int read = 0;
+			// byte[] wavein = new byte[Constant.WAVEOUT_BUF_SIZE];
+			// try {
+			// InputStream is = getResources().getAssets().open("sample.wav");
+			// read = is.read(wavein);
+			// is.close();
+			// Log.d(TAG, "buffer size:" + (read - Constant.WAVE_HEAD_LEN));
+			// } catch (IOException e) {
+			// e.printStackTrace();
+			// }
+			byte[] wavein = WaveEncoder.encode(WaveEncodeTest
+					.getBytes(WaveEncodeTest.DDATA));
 			AudioTrack audioTrack = new AudioTrack(AudioManager.STREAM_MUSIC,
 					Constant.WAVE_RATE_INHZ, AudioFormat.CHANNEL_OUT_MONO,
 					AudioFormat.ENCODING_PCM_8BIT, AudioTrack.getMinBufferSize(
@@ -462,8 +462,9 @@ public class MainActivity extends Activity {
 			audioTrack.play();
 
 			while (isRunning) {
-				audioTrack.write(wavein, Constant.WAVE_HEAD_LEN, read
-						- Constant.WAVE_HEAD_LEN);
+				// audioTrack.write(wavein, Constant.WAVE_HEAD_LEN, read
+				// - Constant.WAVE_HEAD_LEN);
+				audioTrack.write(wavein, 0, wavein.length);
 				try {
 					Thread.sleep(200);
 				} catch (InterruptedException e) {
