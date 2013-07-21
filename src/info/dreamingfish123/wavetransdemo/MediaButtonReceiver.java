@@ -9,6 +9,12 @@ import android.media.AudioManager;
 import android.util.Log;
 import android.view.KeyEvent;
 
+/**
+ * The media button events receiver.
+ * 
+ * @author Hui
+ * 
+ */
 public class MediaButtonReceiver extends BroadcastReceiver {
 
 	private static final BroadcastReceiver INSTANCE = new MediaButtonReceiver();

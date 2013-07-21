@@ -33,6 +33,12 @@ import android.view.View;
 import android.widget.Button;
 import android.widget.TextView;
 
+/**
+ * The main activity of the demo.
+ * 
+ * @author Hui
+ * 
+ */
 public class MainActivity extends Activity {
 
 	private final static String TAG = "MAIN";
@@ -45,6 +51,10 @@ public class MainActivity extends Activity {
 	private boolean isTestingFile = false;
 	private boolean isPlaying = false;
 	private List<WTPPacket> foundPackets = new ArrayList<WTPPacket>();
+
+	/**
+	 * The callback handler to update the view.
+	 */
 	private Handler recorderCallbackHandler = new Handler() {
 
 		@Override
@@ -112,6 +122,9 @@ public class MainActivity extends Activity {
 		super.onDestroy();
 	}
 
+	/**
+	 * Set view events.
+	 */
 	private void setEvents() {
 		final Button playButton = (Button) findViewById(R.id.button1);
 		playButton.setOnClickListener(new View.OnClickListener() {
@@ -314,6 +327,12 @@ public class MainActivity extends Activity {
 		}
 	}
 
+	/**
+	 * The runnable class to test record function.
+	 * 
+	 * @author Hui
+	 * 
+	 */
 	class RecordTestRunnable implements Runnable {
 
 		public AudioRecord recorder = null;
@@ -420,6 +439,12 @@ public class MainActivity extends Activity {
 		}
 	}
 
+	/**
+	 * The runnable class to test play function.
+	 * 
+	 * @author Hui
+	 * 
+	 */
 	class PlayTestRunnable implements Runnable {
 
 		public boolean isRunning = false;
@@ -479,6 +504,12 @@ public class MainActivity extends Activity {
 
 	}
 
+	/**
+	 * The runnable class to test decode live stream function.
+	 * 
+	 * @author Hui
+	 * 
+	 */
 	class DecodeTestRunnable implements Runnable {
 
 		public Handler handler;
@@ -544,6 +575,12 @@ public class MainActivity extends Activity {
 		}
 	}
 
+	/**
+	 * The Runnable class to test decode file function.
+	 * 
+	 * @author Hui
+	 * 
+	 */
 	class FileDecodeTestRunnable implements Runnable {
 
 		private Handler handler;

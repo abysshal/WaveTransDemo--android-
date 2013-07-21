@@ -1,25 +1,41 @@
 package info.dreamingfish123.wavetransdemo.proto;
 
+/**
+ * The wavetransproto data Packet.
+ * 
+ * @author Hui
+ * 
+ */
 public class WTPPacket {
+	/**
+	 * The start flag.
+	 */
 	private byte startFlag = Constant.PACKET_START_FLAG;
+
+	/**
+	 * The data payload.
+	 */
 	private byte[] payload = null;
 
+	/**
+	 * Default.
+	 */
 	public WTPPacket() {
 	}
 
 	/**
-	 * with a certain payload
+	 * With a certain payload.
 	 */
 	public WTPPacket(byte[] payload) {
 		this.setPayload(payload);
 	}
 
 	/**
-	 * decode to a WTPPacket from bytes
+	 * Decode to a WTPPacket from bytes.
 	 * 
 	 * @param bytes
-	 *            the raw data of a packet
-	 * @return the decode result
+	 *            The raw data of a packet.
+	 * @return The decode result.
 	 */
 	public static WTPPacket decodePacketBytes(byte[] bytes) {
 		if (bytes == null) {
@@ -40,9 +56,9 @@ public class WTPPacket {
 	}
 
 	/**
-	 * get the raw data bytes of entire packet
+	 * Get the raw data bytes of entire packet.
 	 * 
-	 * @return the raw data bytes
+	 * @return The raw data bytes.
 	 */
 	public byte[] getPacketBytes() {
 		if (payload == null) {

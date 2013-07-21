@@ -1,28 +1,80 @@
 package info.dreamingfish123.wavetransdemo.proto;
 
+/**
+ * The dynamic average analyzer to analyze the input sound data.
+ * 
+ * @author Hui
+ * 
+ */
 public class DynamicAverageAnalyzer {
 
-	/* wavein buffer */
+	/**
+	 * Max length of the input buffer size.
+	 */
 	private int bufferSize = Constant.WAVEOUT_BUF_SIZE * 2;
+
+	/**
+	 * The input buffer.
+	 */
 	private int[] buffer;
+
+	/**
+	 * The start point of the buffer.
+	 */
 	private int start = 0;
+
+	/**
+	 * The last start point of the buffer.
+	 */
 	private int lastStart = 0;
+
+	/**
+	 * The last remain length of the buffer.
+	 */
 	private int lastRemainLen = 0;
+
+	/**
+	 * The remain legnth of the buffer.
+	 */
 	private int remainLen = 0;
+
+	/**
+	 * The analyzed result in byte array.
+	 */
 	private byte[] result = new byte[Constant.MAX_TRANSFER_DATA_LEN * 2];
 
-	/* result data packet */
+	/**
+	 * The analyzed result in WTPPacket.
+	 */
 	private WTPPacket packet = null;
 
-	/* analyze process control */
+	/**
+	 * Progress flag. The packet start point found.
+	 */
 	private boolean startPointFound = false;
+
+	/**
+	 * Progress flag. The packet size found.
+	 */
 	private boolean packetSizeFound = false;
+
+	/**
+	 * Progress flag. The whole packet found.
+	 */
 	private boolean packetFound = false;
+
+	/**
+	 * Progress flag. The size of the found packet.
+	 */
 	private int packetSize = 0;
+
+	/**
+	 * Progress flag. The size of decoded bytes.
+	 */
 	private int bytesDecoded = 0;
 
 	/**
-	 * with default buffer size.
+	 * With default buffer size.
 	 */
 	public DynamicAverageAnalyzer() {
 		buffer = new int[bufferSize];
@@ -30,9 +82,10 @@ public class DynamicAverageAnalyzer {
 	}
 
 	/**
-	 * set a buffer size.
+	 * Set a buffer size.
 	 * 
 	 * @param bufferSize
+	 *            The size to be setted.
 	 */
 	public DynamicAverageAnalyzer(int bufferSize) {
 		this.bufferSize = bufferSize;
@@ -41,7 +94,7 @@ public class DynamicAverageAnalyzer {
 	}
 
 	/**
-	 * should be called after one packet is found and continue to find more
+	 * Should be called after one packet is found and continue to find more
 	 */
 	public void resetForNext() {
 		int len = remainLen;
@@ -51,26 +104,26 @@ public class DynamicAverageAnalyzer {
 	}
 
 	/**
-	 * add wavein bytes to this analyzer's buffer
+	 * Add wavein bytes to this analyzer's buffer
 	 * 
 	 * @param data
-	 *            the wavein bytes
-	 * @return true if there is enough space of the buffer to append these bytes
+	 *            The wavein bytes
+	 * @return True if there is enough space of the buffer to append these bytes
 	 */
 	public boolean appendBuffer(byte[] data) {
 		return appendBuffer(data, 0, data.length);
 	}
 
 	/**
-	 * add wavein bytes to this analyzer's buffer
+	 * Add wavein bytes to this analyzer's buffer
 	 * 
 	 * @param data
-	 *            the wavein bytes
+	 *            The wavein bytes
 	 * @param offset
-	 *            copy from
+	 *            Copy from
 	 * @param len
-	 *            how much to copy
-	 * @return true if there is enough space of the buffer to append these bytes
+	 *            How much to copy
+	 * @return True if there is enough space of the buffer to append these bytes
 	 */
 	public boolean appendBuffer(byte[] data, int offset, int len) {
 		if (start + remainLen + len / 2 > bufferSize) {
@@ -85,11 +138,11 @@ public class DynamicAverageAnalyzer {
 	}
 
 	/**
-	 * add wavein data in Integer format to this analyzer's buffer
+	 * Add wavein data in Integer format to this analyzer's buffer
 	 * 
 	 * @param val
-	 *            the transformed wavein data
-	 * @return true if there is enough space of the buffer to append this
+	 *            The transformed wavein data
+	 * @return True if there is enough space of the buffer to append this
 	 */
 	public boolean appendBuffer(int val) {
 		if (start + remainLen + 1 > bufferSize) {
@@ -101,9 +154,9 @@ public class DynamicAverageAnalyzer {
 	}
 
 	/**
-	 * analyze from the buffer
+	 * Analyze from the buffer
 	 * 
-	 * @return true if one packet is found
+	 * @return True if one packet is found
 	 */
 	public boolean analyze() {
 		while (isBufferAnalysis() && !packetFound) {
@@ -127,30 +180,30 @@ public class DynamicAverageAnalyzer {
 	}
 
 	/**
-	 * get the decoded Wave Trans Proto packet
+	 * Get the decoded Wave Trans Proto packet
 	 * 
-	 * @return the result packet
+	 * @return The result packet
 	 */
 	public WTPPacket getPacket() {
 		return this.packet;
 	}
 
 	/**
-	 * check if there is enough bytes in the buffer to be analyzed
+	 * Check if there is enough bytes in the buffer to be analyzed
 	 * 
-	 * @return true if there is enough bytes
+	 * @return True if there is enough bytes
 	 */
 	private boolean isBufferAnalysis() {
 		return (remainLen >= Constant.POINT_PER_UART);
 	}
 
 	/**
-	 * move the remain bytes in the buffer to the offset 0
+	 * Move the remain bytes in the buffer to the offset 0
 	 * 
 	 * @param offset
-	 *            move from
+	 *            Move from
 	 * @param len
-	 *            how much to move
+	 *            How much to move
 	 */
 	private void reallocBuffer(int offset, int len) {
 		int j = 0;
@@ -160,7 +213,7 @@ public class DynamicAverageAnalyzer {
 	}
 
 	/**
-	 * reset all params to its defaults
+	 * Reset all params to its defaults
 	 */
 	private void resetAll() {
 		start = 0;
@@ -174,11 +227,11 @@ public class DynamicAverageAnalyzer {
 	}
 
 	/**
-	 * called when error occurred while decoding, to reset params for a new
+	 * Called when error occurred while decoding, to reset params for a new
 	 * analysis
 	 * 
 	 * @param remainLen
-	 *            how much bytes remained to be moved
+	 *            How much bytes remained to be moved
 	 */
 	private void resetOnDecodeError() {
 		// int len = start + remainLen;
@@ -194,7 +247,7 @@ public class DynamicAverageAnalyzer {
 	}
 
 	/**
-	 * check if a packet has been found
+	 * Check if a packet has been found
 	 */
 	private void finishPacket() {
 		if (bytesDecoded == packetSize) { // finished
@@ -204,9 +257,9 @@ public class DynamicAverageAnalyzer {
 	}
 
 	/**
-	 * to find out the start flag from the buffer
+	 * To find out the start flag from the buffer
 	 * 
-	 * @return true if found
+	 * @return True if found
 	 */
 	private boolean locateDataHead() {
 		while (true) {
@@ -239,9 +292,9 @@ public class DynamicAverageAnalyzer {
 	}
 
 	/**
-	 * to found out the packet size from the buffer
+	 * To found out the packet size from the buffer
 	 * 
-	 * @return true if found
+	 * @return True if found
 	 */
 	private boolean getPacketSize() {
 		if (remainLen < Constant.POINT_PER_UART) {
@@ -261,9 +314,9 @@ public class DynamicAverageAnalyzer {
 	}
 
 	/**
-	 * to find out the packet data from the buffer
+	 * To find out the packet data from the buffer
 	 * 
-	 * @return true if found
+	 * @return True if found
 	 */
 	private boolean getPacketData() {
 		if (remainLen < Constant.POINT_PER_UART) {
@@ -281,7 +334,7 @@ public class DynamicAverageAnalyzer {
 	}
 
 	/**
-	 * convert some sample point bytes to a bit data.<br/>
+	 * Convert some sample point bytes to a bit data.<br/>
 	 * Use abs level
 	 * 
 	 * @return 1 - bit 1;<br/>
@@ -323,7 +376,7 @@ public class DynamicAverageAnalyzer {
 	}
 
 	/**
-	 * decode an entire UART data
+	 * Decode an entire UART data
 	 * 
 	 * @return >= 0 if decode succeed and the result should be returned;<br/>
 	 *         < 0 if error occurred
